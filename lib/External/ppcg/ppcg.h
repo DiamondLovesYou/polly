@@ -10,6 +10,10 @@
 
 #include "ppcg_options.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 const char *ppcg_base_name(const char *filename);
 int ppcg_extract_base_name(char *name, const char *input);
 
