@@ -23,7 +23,7 @@ endif ()
 
 # Use an object-library to add the same files to multiple libs without requiring
 # the sources them to be recompiled for each of them.
-add_library(PollyCore OBJECT
+llvm_add_library(PollyCore
   Analysis/DependenceInfo.cpp
   Analysis/PolyhedralInfo.cpp
   Analysis/ScopDetection.cpp
@@ -66,6 +66,30 @@ add_library(PollyCore OBJECT
   Transform/RewriteByReferenceParameters.cpp
   Transform/ScopInliner.cpp
   ${POLLY_HEADER_FILES}
+
+        OBJECT
+        STATIC
+
+        LINK_COMPONENTS
+        LLVMSupport
+        LLVMCore
+        LLVMScalarOpts
+        LLVMInstCombine
+        LLVMTransformUtils
+        LLVMAnalysis
+        LLVMipo
+        LLVMMC
+        LLVMPasses
+        LLVMLinker
+        LLVMIRReader
+        ${nvptx_libs}
+        # The libraries below are required for darwin: http://PR26392
+        LLVMBitReader
+        LLVMMCParser
+        LLVMObject
+        LLVMProfileData
+        LLVMTarget
+        LLVMVectorize
   )
 set_target_properties(PollyCore PROPERTIES FOLDER "Polly")
 
@@ -73,7 +97,7 @@ set_target_properties(PollyCore PROPERTIES FOLDER "Polly")
 # It depends on all library it needs, such that with
 # LLVM_POLLY_LINK_INTO_TOOLS=ON, its dependencies like PollyISL are linked as
 # well.
-add_polly_library(Polly $<TARGET_OBJECTS:PollyCore>)
+llvm_add_library(Polly $<TARGET_OBJECTS:obj.PollyCore>)
 target_link_libraries(Polly PUBLIC
   ${ISL_TARGET}
 )
@@ -101,38 +125,19 @@ if (LLVM_LINK_LLVM_DYLIB)
   target_link_libraries(Polly PUBLIC LLVM)
 else ()
   target_link_libraries(Polly PUBLIC
-    LLVMSupport
-    LLVMCore
-    LLVMScalarOpts
-    LLVMInstCombine
-    LLVMTransformUtils
-    LLVMAnalysis
-    LLVMipo
-    LLVMMC
-    LLVMPasses
-    LLVMLinker
-    LLVMIRReader
-    ${nvptx_libs}
-    # The libraries below are required for darwin: http://PR26392
-    LLVMBitReader
-    LLVMMCParser
-    LLVMObject
-    LLVMProfileData
-    LLVMTarget
-    LLVMVectorize
     )
 endif ()
 
 # Create a loadable module Polly.so that can be loaded using
 # LLVM's/clang's "-load" option.
-if (MSVC)
+if (NOT LLVM_ENABLE_PLUGINS)
   # Add dummy target, because loadable modules are not supported on Windows
   add_custom_target(LLVMPolly)
   set_target_properties(LLVMPolly PROPERTIES FOLDER "Polly")
 else ()
   add_polly_loadable_module(LLVMPolly
-    Polly.cpp
-    $<TARGET_OBJECTS:PollyCore>
+    Polly/Polly.cpp
+    $<TARGET_OBJECTS:obj.PollyCore>
   )
 
   # Only add the dependencies that are not part of LLVM. The latter are assumed

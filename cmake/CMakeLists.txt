@@ -10,7 +10,7 @@ else()
 endif()
 
 set(POLLY_CONFIG_EXPORTED_TARGETS Polly ${ISL_TARGET})
-if (NOT MSVC)
+if (LLVM_ENABLE_PLUGINS)
   # LLVMPolly is a dummy target on Win
   list(APPEND POLLY_CONFIG_EXPORTED_TARGETS LLVMPolly)
 endif()
