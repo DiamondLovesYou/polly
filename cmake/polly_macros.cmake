@@ -18,36 +18,16 @@ macro(add_polly_library name)
   elseif (SHARED_LIBRARY)
     set(libkind SHARED)
   else()
-    set(libkind)
+    set(libkind STATIC)
   endif()
-  add_library( ${name} ${libkind} ${srcs} )
+  add_llvm_library( ${name}
+    ${srcs}
+
+    ${libkind}
+
+    LINK_LIBS ${POLLY_LINK_LIBS}
+    )
   set_target_properties(${name} PROPERTIES FOLDER "Polly")
-
-  if( LLVM_COMMON_DEPENDS )
-    add_dependencies( ${name} ${LLVM_COMMON_DEPENDS} )
-  endif( LLVM_COMMON_DEPENDS )
-  if( LLVM_USED_LIBS )
-    foreach(lib ${LLVM_USED_LIBS})
-      target_link_libraries( ${name} PUBLIC ${lib} )
-    endforeach(lib)
-  endif( LLVM_USED_LIBS )
-
-  if(POLLY_LINK_LIBS)
-    foreach(lib ${POLLY_LINK_LIBS})
-      target_link_libraries(${name} PUBLIC ${lib})
-    endforeach(lib)
-  endif(POLLY_LINK_LIBS)
-
-  if( LLVM_LINK_COMPONENTS )
-    llvm_config(${name} ${LLVM_LINK_COMPONENTS})
-  endif( LLVM_LINK_COMPONENTS )
-  if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY OR ${name} STREQUAL "LLVMPolly")
-    install(TARGETS ${name}
-      EXPORT LLVMExports
-      LIBRARY DESTINATION lib${LLVM_LIBDIR_SUFFIX}
-      ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX})
-  endif()
-  set_property(GLOBAL APPEND PROPERTY LLVM_EXPORTS ${name})
 endmacro(add_polly_library)
 
 macro(add_polly_loadable_module name)
@@ -61,7 +41,6 @@ macro(add_polly_loadable_module name)
   endif()
   set(MODULE TRUE)
   add_polly_library(${name} ${srcs})
-  set_target_properties(${name} PROPERTIES FOLDER "Polly")
   if (GLOBAL_NOT_MODULE)
     unset (MODULE)
   endif()

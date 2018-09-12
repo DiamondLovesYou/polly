@@ -265,7 +265,7 @@ if (POLLY_BUNDLED_ISL)
     isl/imath/imrat.c
     )
 
-  add_polly_library(PollyISL
+  add_polly_library(LLVMPollyISL
     ${ISL_FILES}
     )
 
@@ -282,17 +282,15 @@ if (POLLY_BUNDLED_ISL)
       )
   endif()
 
-  add_executable(polly-isl-test
+  set(LLVM_LINK_COMPONENTS PollyISL)
+  add_llvm_executable(polly-isl-test
     isl/isl_test.c
     )
   set_target_properties(polly-isl-test PROPERTIES FOLDER "Polly")
-
-  target_link_libraries(polly-isl-test PRIVATE
-    PollyISL
-    )
+  set(LLVM_LINK_COMPONENTS)
 
   # ISL requires at least C99 to compile. gcc < 5.0 use -std=gnu89 as default.
-  target_enable_c99(PollyISL)
+  target_enable_c99(LLVMPollyISL)
   target_enable_c99(polly-isl-test)
 endif (POLLY_BUNDLED_ISL)
 
@@ -344,11 +342,11 @@ include_directories(BEFORE
   ${PET_SOURCE_DIR}/include
 )
 
-add_polly_library(PollyPPCG
+add_llvm_library(LLVMPollyPPCG
   ${PPCG_FILES}
-)
 
-target_link_libraries(PollyPPCG PUBLIC ${ISL_TARGET})
+  LINK_COMPONENTS PollyISL
+)
 
 # Disable warnings for upstream projects.
 if (MSVC)
@@ -361,19 +359,19 @@ if (MSVC)
     -wd4221 # nonstandard extension used : 'identifier' : cannot be initialized using address of automatic variable
   )
   if (POLLY_BUNDLED_ISL)
-    target_compile_options(PollyISL PRIVATE ${DISABLE_WARNING_FLAGS})
+    target_compile_options(LLVMPollyISL PRIVATE ${DISABLE_WARNING_FLAGS})
     target_compile_options(polly-isl-test PRIVATE ${DISABLE_WARNING_FLAGS})
   endif (POLLY_BUNDLED_ISL)
-  target_compile_options(PollyPPCG PRIVATE ${DISABLE_WARNING_FLAGS})
+  target_compile_options(LLVMPollyPPCG PRIVATE ${DISABLE_WARNING_FLAGS})
 else ()
   if (POLLY_BUNDLED_ISL)
-    set_target_properties(PollyISL polly-isl-test PROPERTIES COMPILE_FLAGS "-w")
+    set_target_properties(LLVMPollyISL polly-isl-test PROPERTIES COMPILE_FLAGS "-w")
   endif (POLLY_BUNDLED_ISL)
-  set_target_properties(PollyPPCG PROPERTIES COMPILE_FLAGS "-w")
+  set_target_properties(LLVMPollyPPCG PROPERTIES COMPILE_FLAGS "-w")
 endif ()
 
 if(MSVC)
   # In the Windows API (with some exceptions), the maximum length for a path is
   # MAX_PATH, which is defined as 260 characters.
-  target_compile_definitions(PollyPPCG PRIVATE "-DPATH_MAX=260")
+  target_compile_definitions(LLVMPollyPPCG PRIVATE "-DPATH_MAX=260")
 endif ()

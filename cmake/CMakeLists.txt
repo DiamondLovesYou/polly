@@ -10,12 +10,8 @@ else()
 endif()
 
 set(POLLY_CONFIG_EXPORTED_TARGETS Polly ${ISL_TARGET})
-if (NOT MSVC)
-  # LLVMPolly is a dummy target on Win
-  list(APPEND POLLY_CONFIG_EXPORTED_TARGETS LLVMPolly)
-endif()
 if (POLLY_ENABLE_GPGPU_CODEGEN)
-  list(APPEND POLLY_CONFIG_EXPORTED_TARGETS PollyPPCG)
+  list(APPEND POLLY_CONFIG_EXPORTED_TARGETS LLVMPollyPPCG)
 endif()
 
 # Get the target type for every exported target

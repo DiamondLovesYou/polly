@@ -131,7 +131,7 @@ else()
     ${CMAKE_CURRENT_BINARY_DIR}/lib/External/isl/include
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/External/isl/include
   )
-  set(ISL_TARGET PollyISL)
+  set(ISL_TARGET LLVMPollyISL)
 endif()
 
 include_directories(
